@@ -7,7 +7,9 @@
 using namespace std;
 string fileName = "Clients.txt";
 
-enum enMenues { Show = 1, Add = 2, Del = 3, Edit = 4, Find = 5, Exit = 6 };
+enum enMenues { Show = 1, Add = 2, Del = 3, Edit = 4, Find = 5, Trans = 6, Exit = 7 };
+
+enum enTransctionsMenu { Deposite = 1, Withdraw = 2, Total = 3, Goback = 4 };
 
 struct stClientRecord {
 
@@ -22,6 +24,28 @@ struct stClientRecord {
 };
 
 vector <stClientRecord> ClientsRecord();
+
+void TransactionMenue();
+
+void MainMenue();
+
+short ReadAnswer(string message) {
+	short answer = 0;
+
+	cout << message << endl;
+	cin >> answer;
+
+	return answer;
+}
+
+stClientRecord ReadClientNumber() {
+	stClientRecord client;
+
+	cout << "Please enter Account number\n";
+	getline(cin >> ws, client.AccountNumber);
+
+	return client;
+}
 
 stClientRecord AddClient() {
 
@@ -255,6 +279,12 @@ void ShowClientRecord(stClientRecord record) {
 
 }
 
+void MakeDeposite(stClientRecord& client, double Amount) {
+
+	client.Balance += Amount;
+
+}
+
 void DeleteClientScreen() {
 
 	cout << "\n---------------------------------------\n";
@@ -276,6 +306,91 @@ void FindClientScreen() {
 	cout << "\n---------------------------------------\n";
 	cout << "\tFind Client Screen\n";
 	cout << "---------------------------------------\n\n";
+
+}
+
+void showDepositeTaskScreen() {
+
+	cout << "\n---------------------------------------\n";
+	cout << "\tDeposite Screen\n";
+	cout << "---------------------------------------\n\n";
+
+}
+
+void DepoisteTask() {
+
+	showDepositeTaskScreen();
+
+	stClientRecord Client = ReadClientNumber();
+
+	vector <stClientRecord> Records = ClientsRecord();
+
+	bool isFound = false;
+
+	for (stClientRecord& record : Records) {
+
+		if (record.AccountNumber == Client.AccountNumber) {
+
+			ShowClientRecord(record);
+
+			isFound = true;
+
+			double amount = (double)ReadAnswer("Please enter the Amount: \n");
+
+			char answer = 'n';
+			cout << "Are you sure you want to perform this task ? [Y/N]\n";
+			cin >> answer;
+
+			if (toupper(answer) == 'Y') {
+				MakeDeposite(record, amount);
+				UploadClientsRecordWithoutDeleted(Records);
+				break;
+			}
+
+		}
+
+	}
+
+	if (!isFound) {
+		cout << "\nSorry, the Client with the number [" << Client.AccountNumber << "] is not exist. \n\n\n";
+		isFound = false;
+	}
+
+}
+
+void performTransactionsMenue(enTransctionsMenu task) {
+
+	switch (task) {
+
+	case enTransctionsMenu::Deposite:
+
+		system("cls");
+		DepoisteTask();
+		system("pause");
+		TransactionMenue();
+		break;
+
+	case enTransctionsMenu::Goback:
+
+		system("cls");
+		MainMenue();
+		system("pause");
+	}
+
+}
+
+void TransactionsMenueScreen() {
+
+	cout << "===========================================\n";
+	cout << "\tTransactions Menue Screen\n";
+	cout << "===========================================\n";
+
+	cout << "\t" << "[1] Deposite. \n";
+	cout << "\t" << "[2] Withdraw. \n";
+	cout << "\t" << "[3] Total Balance. \n";
+	cout << "\t" << "[4] Main Menue. \n";
+
+	cout << "==========================================\n\n";
 
 }
 
@@ -417,6 +532,9 @@ void DeleteClient() {
 
 	UploadClientsRecordWithoutDeleted(Clients);
 
+	//Refresh:
+	Clients = ClientsRecord();
+
 	return;
 
 }
@@ -481,6 +599,16 @@ void FindClient() {
 
 }
 
+void TransactionMenue() {
+
+	system("cls");
+
+	TransactionsMenueScreen();
+
+	performTransactionsMenue((enTransctionsMenu)ReadAnswer("Choose what do you want to do ? [1-4] "));
+
+}
+
 void ExitProgram() {
 
 	cout << "\n---------------------------------------\n";
@@ -504,7 +632,8 @@ void MainMenue() {
 	cout << "\t" << "[3] Delete Client. \n";
 	cout << "\t" << "[4] Update Client Info. \n";
 	cout << "\t" << "[5] Find Client. \n";
-	cout << "\t" << "[6] Exit. \n";
+	cout << "\t" << "[6] Transactions. \n";
+	cout << "\t" << "[7] Exit. \n";
 
 	cout << "==========================================\n";
 
@@ -560,6 +689,13 @@ void MainMenue() {
 		FindClient();
 		system("pause");
 		MainMenue();
+		break;
+
+	case enMenues::Trans:
+
+		system("cls");
+		TransactionMenue();
+		system("pause");
 		break;
 
 	case enMenues::Exit:
