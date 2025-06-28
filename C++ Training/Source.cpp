@@ -87,6 +87,7 @@ vector <stClientRecord> AddMoreClients() {
 
 		cout << "Do you want to add more clients? [Y/N]\n";
 		cin >> answer;
+		cout << endl << endl;
 
 	} while (toupper(answer) == 'Y');
 
@@ -238,7 +239,7 @@ void PrintRecord(stClientRecord Record) {
 
 }
 
-void PrintDeleteClientRecord(stClientRecord record) {
+void ShowClientRecord(stClientRecord record) {
 
 	cout << "\nThe following are the client details: \n";
 
@@ -250,7 +251,7 @@ void PrintDeleteClientRecord(stClientRecord record) {
 	cout << "Phone        :" << record.PhoneNumber << endl;
 	cout << "Account Balance         :" << record.Balance<< endl;
 
-	cout << "-------------------------------------------------\n";
+	cout << "-------------------------------------------------\n\n";
 
 }
 
@@ -267,6 +268,14 @@ void UpdateClientScreen() {
 	cout << "\n---------------------------------------\n";
 	cout << "\tUpdate Client Screen\n";
 	cout << "---------------------------------------\n";
+
+}
+
+void FindClientScreen() {
+
+	cout << "\n---------------------------------------\n";
+	cout << "\tFind Client Screen\n";
+	cout << "---------------------------------------\n\n";
 
 }
 
@@ -287,7 +296,7 @@ vector <stClientRecord> ChooseClientToDelete() {
 			if (client.AccountNumber == record.AccountNumber) {
 
 				isExist = true;
-				PrintDeleteClientRecord(record);
+				ShowClientRecord(record);
 
 				char answer = 'n';
 
@@ -334,12 +343,13 @@ vector <stClientRecord> ChooseClientToUpdate() {;
 			if (client.AccountNumber == record.AccountNumber) {
 
 				isExist = true;
-				PrintDeleteClientRecord(record);
+				ShowClientRecord(record);
 
 				char answer = 'n';
 
 				cout << "\nAre you sure you want to update this client ? [Y/N]\n";
 				cin >> answer;
+				cout << endl << endl;
 
 				if (toupper(answer) == 'Y') {
 
@@ -433,13 +443,49 @@ void UpdateClient() {
 			cout << "Enter Balance: \n";
 			cin >> Client.Balance;
 
+			cout << "\nClient Infos Updated Successfully. \n\n";
 		}
 
 	}
 
 	UploadClientsRecordWithoutDeleted(ClientToUpdate);
 
-	cout << "\nClient Infos Updated Successfully. \n\n";
+}
+
+void FindClient() {
+
+	FindClientScreen();
+
+	vector <stClientRecord> Clients = ClientsRecord();
+	stClientRecord Client;
+
+	bool isFound = false;
+
+	cout << "Enter Account Number: \n";
+	getline(cin >> ws, Client.AccountNumber);
+
+	for (stClientRecord& record : Clients) {
+
+		if (Client.AccountNumber == record.AccountNumber) {
+
+			isFound = true;
+			ShowClientRecord(record);
+
+		}
+
+	}
+
+	if (!isFound) {
+		cout << "\nSorry, the client with number [" << Client.AccountNumber << "] is Not Found.\n\n";
+		}
+
+}
+
+void ExitProgram() {
+
+	cout << "\n---------------------------------------\n";
+	cout << "\tProgram Ends :-)\n";
+	cout << "---------------------------------------\n";
 
 }
 
@@ -508,6 +554,19 @@ void MainMenue() {
 		MainMenue();
 		break;
 
+	case enMenues::Find:
+
+		system("cls");
+		FindClient();
+		system("pause");
+		MainMenue();
+		break;
+
+	case enMenues::Exit:
+		system("cls");
+		ExitProgram();
+		system("pause>0");
+		break;
 	}
 
 	system("pause>0");
