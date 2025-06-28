@@ -286,40 +286,40 @@ vector <stClientRecord> ChooseClientToDelete() {
 
 	bool isExist = false;
 
-	do {
 
-		cout << "\n Enter Client Account Number: \n";
-		getline(cin >> ws, client.AccountNumber);
+	cout << "\n Enter Client Account Number: \n";
+	getline(cin >> ws, client.AccountNumber);
 
-		for (stClientRecord& record : AllClients) {
+	for (stClientRecord& record : AllClients) {
 
-			if (client.AccountNumber == record.AccountNumber) {
+		if (client.AccountNumber == record.AccountNumber) {
 
-				isExist = true;
-				ShowClientRecord(record);
+			isExist = true;
+			ShowClientRecord(record);
 
-				char answer = 'n';
+			char answer = 'n';
 
-				cout << "\nAre you sure you want to delete this client ? [Y/N]\n";
-				cin >> answer;
+			cout << "\nAre you sure you want to delete this client ? [Y/N]\n";
+			cin >> answer;
 
-				if (toupper(answer) == 'Y') {
+			cout << endl << endl;
 
-					record.MarkToDelete = true;
+			if (toupper(answer) == 'Y') {
 
-					cout << "\nClient Deleted Successfully. \n\n";
+				record.MarkToDelete = true;
 
-				}
+				cout << "\nClient Deleted Successfully. \n\n";
 
-				break;
 			}
 
+			break;
 		}
-	} while (!isExist);
+
+	}
 
 
 	if (!isExist) {
-		cout << "\nSorry, this client number is not exist. \n";
+		cout << "\nSorry, the Client with the number [" << client.AccountNumber << "] is not exist. \n\n\n";
 		isExist = false;
 	}
 	
@@ -333,39 +333,39 @@ vector <stClientRecord> ChooseClientToUpdate() {;
 
 	bool isExist = false;
 
-	do {
 
-		cout << "\n Enter Client Account Number: \n";
-		getline(cin >> ws, client.AccountNumber);
 
-		for (stClientRecord& record : AllClients) {
+	cout << "\n Enter Client Account Number: \n";
+	getline(cin >> ws, client.AccountNumber);
 
-			if (client.AccountNumber == record.AccountNumber) {
+	for (stClientRecord& record : AllClients) {
 
-				isExist = true;
-				ShowClientRecord(record);
+		if (client.AccountNumber == record.AccountNumber) {
 
-				char answer = 'n';
+			isExist = true;
+			ShowClientRecord(record);
 
-				cout << "\nAre you sure you want to update this client ? [Y/N]\n";
-				cin >> answer;
-				cout << endl << endl;
+			char answer = 'n';
 
-				if (toupper(answer) == 'Y') {
+			cout << "\nAre you sure you want to update this client ? [Y/N]\n";
+			cin >> answer;
+			cout << endl << endl;
 
-					record.MarkToEdit = true;
+			if (toupper(answer) == 'Y') {
 
-				}
+				record.MarkToEdit = true;
 
-				break;
 			}
 
+			break;
 		}
-	} while (!isExist);
+
+	}
+	
 
 
 	if (!isExist) {
-		cout << "\nSorry, this client number is not exist. \n";
+		cout << "\nSorry, the Client with the number [" << client.AccountNumber << "] is not exist. \n\n\n";
 		isExist = false;
 	}
 
