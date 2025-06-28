@@ -35,6 +35,14 @@ short ReadAnswer(string message) {
 	cout << message << endl;
 	cin >> answer;
 
+	while (cin.fail()) {
+		cin.clear();
+		cin.ignore(std::numeric_limits<streamsize>::max(), '\n');
+
+		cout << message << endl;
+		cin >> answer;
+	}
+
 	return answer;
 }
 
@@ -263,6 +271,14 @@ void PrintRecord(stClientRecord Record) {
 
 }
 
+void PrintTotalBalanceRecord(stClientRecord Record) {
+
+	cout << "| " << setw(19) << left << Record.AccountNumber;
+	cout << "| " << setw(49) << left << Record.FullName;
+	cout << "| " << setw(45) << left << Record.Balance;
+
+}
+
 void ShowClientRecord(stClientRecord record) {
 
 	cout << "\nThe following are the client details: \n";
@@ -282,6 +298,12 @@ void ShowClientRecord(stClientRecord record) {
 void MakeDeposite(stClientRecord& client, double Amount) {
 
 	client.Balance += Amount;
+
+}
+
+void MakeWithdraw(stClientRecord& client, double Amount) {
+
+	client.Balance += (Amount * -1);
 
 }
 
@@ -309,7 +331,7 @@ void FindClientScreen() {
 
 }
 
-void showDepositeTaskScreen() {
+void ShowDepositeTaskScreen() {
 
 	cout << "\n---------------------------------------\n";
 	cout << "\tDeposite Screen\n";
@@ -317,9 +339,17 @@ void showDepositeTaskScreen() {
 
 }
 
+void ShowWithdrawTaskScreen() {
+
+	cout << "\n---------------------------------------\n";
+	cout << "\tWithdraw Screen\n";
+	cout << "---------------------------------------\n\n";
+
+}
+
 void DepoisteTask() {
 
-	showDepositeTaskScreen();
+	ShowDepositeTaskScreen();
 
 	stClientRecord Client = ReadClientNumber();
 
@@ -335,11 +365,13 @@ void DepoisteTask() {
 
 			isFound = true;
 
-			double amount = (double)ReadAnswer("Please enter the Amount: \n");
+			double amount = (double)ReadAnswer("Please enter the Amount: ");
 
 			char answer = 'n';
 			cout << "Are you sure you want to perform this task ? [Y/N]\n";
 			cin >> answer;
+
+			cout << endl;
 
 			if (toupper(answer) == 'Y') {
 				MakeDeposite(record, amount);
@@ -358,6 +390,80 @@ void DepoisteTask() {
 
 }
 
+void WithdrawTask() {
+
+	ShowWithdrawTaskScreen();
+
+	stClientRecord Client = ReadClientNumber();
+
+	vector <stClientRecord> Records = ClientsRecord();
+
+	bool isFound = false;
+
+	for (stClientRecord& record : Records) {
+
+		if (record.AccountNumber == Client.AccountNumber) {
+
+			ShowClientRecord(record);
+
+			isFound = true;
+
+			double amount = (double)ReadAnswer("Please enter the Amount: ");
+
+			char answer = 'n';
+			cout << "Are you sure you want to perform this task ? [Y/N]\n";
+			cin >> answer;
+
+			cout << endl;
+
+			if (toupper(answer) == 'Y') {
+				MakeWithdraw(record, amount);
+				UploadClientsRecordWithoutDeleted(Records);
+				break;
+			}
+
+		}
+
+	}
+
+	if (!isFound) {
+		cout << "\nSorry, the Client with the number [" << Client.AccountNumber << "] is not exist. \n\n\n";
+		isFound = false;
+	}
+
+}
+
+void TotalBalance() {
+
+	vector <stClientRecord> cRecords = ClientsRecord();
+
+	int sum = 0;
+
+	cout << "\n\t\t\t\t\tClient List (" << cRecords.size() << ") Client(s).\n";
+
+	cout << "______________________________________________________________";
+	cout << "__________________________________________________________\n\n";
+	cout << "|" << setw(20) << left << " Account Number";
+	cout << "|" << setw(50) << left << " Client Name" << "|" << setw(45) << left << " Balance";
+	cout << "\n______________________________________________________________";
+	cout << "__________________________________________________________\n\n";
+
+
+	for (stClientRecord& record : cRecords) {
+
+		PrintTotalBalanceRecord(record);
+		sum += record.Balance;
+		cout << endl;
+
+	}
+
+
+	cout << "\n______________________________________________________________";
+	cout << "__________________________________________________________\n\n";
+	cout << "\t\t\t\t\tTotal Balance: " << sum << endl << endl;
+
+}
+
 void performTransactionsMenue(enTransctionsMenu task) {
 
 	switch (task) {
@@ -366,6 +472,22 @@ void performTransactionsMenue(enTransctionsMenu task) {
 
 		system("cls");
 		DepoisteTask();
+		system("pause");
+		TransactionMenue();
+		break;
+
+	case enTransctionsMenu::Withdraw:
+
+		system("cls");
+		WithdrawTask();
+		system("pause");
+		TransactionMenue();
+		break;
+
+	case enTransctionsMenu::Total:
+
+		system("cls");
+		TotalBalance();
 		system("pause");
 		TransactionMenue();
 		break;
