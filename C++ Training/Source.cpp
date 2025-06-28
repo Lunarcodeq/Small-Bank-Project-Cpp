@@ -262,9 +262,15 @@ void DeleteClientScreen() {
 
 }
 
-vector <stClientRecord> ChooseClientToDelete() {
+void UpdateClientScreen() {
 
-	DeleteClientScreen();
+	cout << "\n---------------------------------------\n";
+	cout << "\tUpdate Client Screen\n";
+	cout << "---------------------------------------\n";
+
+}
+
+vector <stClientRecord> ChooseClientToDelete() {
 
 	vector <stClientRecord> AllClients = ClientsRecord();
 	stClientRecord client;
@@ -311,6 +317,51 @@ vector <stClientRecord> ChooseClientToDelete() {
 	return AllClients;
 }
 
+vector <stClientRecord> ChooseClientToUpdate() {;
+
+	vector <stClientRecord> AllClients = ClientsRecord();
+	stClientRecord client;
+
+	bool isExist = false;
+
+	do {
+
+		cout << "\n Enter Client Account Number: \n";
+		getline(cin >> ws, client.AccountNumber);
+
+		for (stClientRecord& record : AllClients) {
+
+			if (client.AccountNumber == record.AccountNumber) {
+
+				isExist = true;
+				PrintDeleteClientRecord(record);
+
+				char answer = 'n';
+
+				cout << "\nAre you sure you want to update this client ? [Y/N]\n";
+				cin >> answer;
+
+				if (toupper(answer) == 'Y') {
+
+					record.MarkToEdit = true;
+
+				}
+
+				break;
+			}
+
+		}
+	} while (!isExist);
+
+
+	if (!isExist) {
+		cout << "\nSorry, this client number is not exist. \n";
+		isExist = false;
+	}
+
+	return AllClients;
+}
+
 void ShowClients() {
 
 	vector <stClientRecord> cRecords = ClientsRecord();
@@ -350,11 +401,45 @@ void AddNewClients() {
 
 void DeleteClient() {
 
+	DeleteClientScreen();
+
 	vector <stClientRecord> Clients = ChooseClientToDelete();
 
 	UploadClientsRecordWithoutDeleted(Clients);
 
 	return;
+
+}
+
+void UpdateClient() {
+
+	UpdateClientScreen();
+
+	vector <stClientRecord> ClientToUpdate = ChooseClientToUpdate();
+
+	for (stClientRecord& Client : ClientToUpdate) {
+
+		if (Client.MarkToEdit == true) {
+
+			cout << "\nEnter Pincode: \n";
+			getline(cin >> ws, Client.Pincode);
+
+			cout << "Enter Name: \n";
+			getline(cin, Client.FullName);
+
+			cout << "Enter Phone Number: \n";
+			getline(cin, Client.PhoneNumber);
+
+			cout << "Enter Balance: \n";
+			cin >> Client.Balance;
+
+		}
+
+	}
+
+	UploadClientsRecordWithoutDeleted(ClientToUpdate);
+
+	cout << "\nClient Infos Updated Successfully. \n\n";
 
 }
 
@@ -411,6 +496,14 @@ void MainMenue() {
 
 		system("cls");
 		DeleteClient();
+		system("pause");
+		MainMenue();
+		break;
+
+	case enMenues::Edit:
+
+		system("cls");
+		UpdateClient();
 		system("pause");
 		MainMenue();
 		break;
