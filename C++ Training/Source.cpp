@@ -21,24 +21,53 @@ struct stClientRecord {
 
 };
 
+vector <stClientRecord> ClientsRecord();
+
 stClientRecord AddClient() {
+
+	vector <stClientRecord> records = ClientsRecord();
 
 	stClientRecord Client;
 
-	cout << "\nEnter Account Number: \n";
-	getline(cin >> ws, Client.AccountNumber);
+	bool isExist = false;
 
-	cout << "Enter Pincode: \n";
-	getline(cin, Client.Pincode);
+	do {
 
-	cout << "Enter Name: \n";
-	getline(cin, Client.FullName);
+		cout << "\nEnter Account Number: \n";
+		getline(cin >> ws, Client.AccountNumber);
 
-	cout << "Enter Phone Number: \n";
-	getline(cin, Client.PhoneNumber);
+		for (stClientRecord& record : records) {
 
-	cout << "Enter Balance: \n";
-	cin >> Client.Balance;
+			if (record.AccountNumber == Client.AccountNumber) {
+
+				cout << "Sorry, the client with the number [" << Client.AccountNumber << "] Already Exists. \n";
+				isExist = true;
+				break;
+			}
+			else {
+				isExist = false;
+				break;
+			}
+
+		}
+	} while (isExist);
+
+	if (!isExist) {
+
+		cout << "Enter Pincode: \n";
+		getline(cin, Client.Pincode);
+
+		cout << "Enter Name: \n";
+		getline(cin, Client.FullName);
+
+		cout << "Enter Phone Number: \n";
+		getline(cin, Client.PhoneNumber);
+
+		cout << "Enter Balance: \n";
+		cin >> Client.Balance;
+
+	}
+
 
 	return Client;
 }
@@ -100,6 +129,34 @@ void UploadClientsRecord(vector <stClientRecord> ClientsInfo) {
 		file.close();
 	}
 
+
+}
+
+void UploadClientsRecordWithoutDeleted(vector <stClientRecord> ClientsInfo) {
+
+	stClientRecord Records;
+
+	fstream file;
+
+	file.open(fileName, ios::out);
+
+	if (file.is_open()) {
+
+		string line = "";
+
+		for (stClientRecord& info : ClientsInfo) {
+
+			if (info.MarkToDelete == false) {
+
+				line = ConvertInfosToRecord(info);
+				file << line << endl;
+
+			}
+
+		}
+
+		file.close();
+	}
 
 }
 
@@ -181,11 +238,84 @@ void PrintRecord(stClientRecord Record) {
 
 }
 
+void PrintDeleteClientRecord(stClientRecord record) {
+
+	cout << "\nThe following are the client details: \n";
+
+	cout << "-------------------------------------------------\n";
+
+	cout << "Account Number          :" << record.AccountNumber << endl;
+	cout << "Pincode          :" << record.Pincode << endl;
+	cout << "Name          :" << record.FullName << endl;
+	cout << "Phone        :" << record.PhoneNumber << endl;
+	cout << "Account Balance         :" << record.Balance<< endl;
+
+	cout << "-------------------------------------------------\n";
+
+}
+
+void DeleteClientScreen() {
+
+	cout << "\n---------------------------------------\n";
+	cout << "\tDelete Client Screen\n";
+	cout << "---------------------------------------\n";
+
+}
+
+vector <stClientRecord> ChooseClientToDelete() {
+
+	DeleteClientScreen();
+
+	vector <stClientRecord> AllClients = ClientsRecord();
+	stClientRecord client;
+
+	bool isExist = false;
+
+	do {
+
+		cout << "\n Enter Client Account Number: \n";
+		getline(cin >> ws, client.AccountNumber);
+
+		for (stClientRecord& record : AllClients) {
+
+			if (client.AccountNumber == record.AccountNumber) {
+
+				isExist = true;
+				PrintDeleteClientRecord(record);
+
+				char answer = 'n';
+
+				cout << "\nAre you sure you want to delete this client ? [Y/N]\n";
+				cin >> answer;
+
+				if (toupper(answer) == 'Y') {
+
+					record.MarkToDelete = true;
+
+					cout << "\nClient Deleted Successfully. \n\n";
+
+				}
+
+				break;
+			}
+
+		}
+	} while (!isExist);
+
+
+	if (!isExist) {
+		cout << "\nSorry, this client number is not exist. \n";
+		isExist = false;
+	}
+	
+	return AllClients;
+}
+
 void ShowClients() {
 
 	vector <stClientRecord> cRecords = ClientsRecord();
 
-	cout << "\t\t\t\t\tClient List (" << cRecords.size() << ") Client(s).\n";
+	cout << "\n\t\t\t\t\tClient List (" << cRecords.size() << ") Client(s).\n";
 
 	cout << "______________________________________________________________";
 	cout << "__________________________________________________________\n\n";
@@ -204,7 +334,7 @@ void ShowClients() {
 
 
 	cout << "\n______________________________________________________________";
-	cout << "__________________________________________________________\n\n";
+	cout << "__________________________________________________________\n\n\n\n";
 }
 
 void AddNewClients() {
@@ -215,6 +345,16 @@ void AddNewClients() {
 
 	vector <stClientRecord> ClientsInfo = AddMoreClients();
 	UploadClientsRecord(ClientsInfo);
+
+}
+
+void DeleteClient() {
+
+	vector <stClientRecord> Clients = ChooseClientToDelete();
+
+	UploadClientsRecordWithoutDeleted(Clients);
+
+	return;
 
 }
 
@@ -263,6 +403,14 @@ void MainMenue() {
 
 		system("cls");
 		AddNewClients();
+		system("pause");
+		MainMenue();
+		break;
+
+	case enMenues::Del:
+
+		system("cls");
+		DeleteClient();
 		system("pause");
 		MainMenue();
 		break;
