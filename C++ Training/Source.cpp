@@ -119,7 +119,7 @@ vector <stClientRecord> AddMoreClients() {
 
 		cout << "Do you want to add more clients? [Y/N]\n";
 		cin >> answer;
-		cout << endl << endl;
+		cout << endl;
 
 	} while (toupper(answer) == 'Y');
 
