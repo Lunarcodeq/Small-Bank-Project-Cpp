@@ -36,11 +36,11 @@ struct stUsers {
 
 vector <stClientRecord> ClientsRecord();
 
-void MangeUsersMenu();
+void MangeUsersMenu(stUsers user);
 
-void TransactionMenue();
+void TransactionMenue(stUsers user);
 
-void MainMenue();
+void MainMenue(stUsers user);
 
 vector <stUsers> UsersRecord();
 
@@ -578,16 +578,16 @@ void LoginScreen() {
 
 }
 
-void ErrorScreen() {
+void ErrorScreen(stUsers user) {
 
 	cout << "\n---------------------------------\n";
 	cout << "\tPermission Denied :-(\n";
 	cout << "---------------------------------\n";
 	cout << "You don't have access to this feature, pleaase\n";
-	cout << "Contact you're admin for more help";
+	cout << "Contact you're admin for more help\n\n\n";
 
 	system("pause");
-	MainMenue();
+	MainMenue(user);
 
 }
 
@@ -708,7 +708,7 @@ void TotalBalance() {
 
 }
 
-void performTransactionsMenue(enTransctionsMenu task) {
+void performTransactionsMenue(enTransctionsMenu task, stUsers user) {
 
 	switch (task) {
 
@@ -717,7 +717,7 @@ void performTransactionsMenue(enTransctionsMenu task) {
 		system("cls");
 		DepoisteTask();
 		system("pause");
-		TransactionMenue();
+		TransactionMenue(user);
 		break;
 
 	case enTransctionsMenu::Withdraw:
@@ -725,7 +725,7 @@ void performTransactionsMenue(enTransctionsMenu task) {
 		system("cls");
 		WithdrawTask();
 		system("pause");
-		TransactionMenue();
+		TransactionMenue(user);
 		break;
 
 	case enTransctionsMenu::Total:
@@ -733,13 +733,13 @@ void performTransactionsMenue(enTransctionsMenu task) {
 		system("cls");
 		TotalBalance();
 		system("pause");
-		TransactionMenue();
+		TransactionMenue(user);
 		break;
 
 	case enTransctionsMenu::Goback:
 
 		system("cls");
-		MainMenue();
+		MainMenue(user);
 		system("pause");
 	}
 
@@ -870,7 +870,7 @@ vector <stClientRecord> ChooseClientToUpdate() {;
 	return AllClients;
 }
 
-bool ValidateLogin(stUsers UserToCheck) {
+bool ValidateLogin(stUsers& UserToCheck) {
 
 	vector <stUsers> vUsers = UsersRecord();
 
@@ -878,6 +878,7 @@ bool ValidateLogin(stUsers UserToCheck) {
 
 		if (user.Username == UserToCheck.Username && user.Password == UserToCheck.Password) {
 
+			UserToCheck = user;
 			return true;
 
 		}
@@ -886,19 +887,19 @@ bool ValidateLogin(stUsers UserToCheck) {
 	return false;
 }
 
-void UserLogin(stUsers& user) {
+stUsers UserLogin(stUsers& user) {
 
-	cout << "Please enter username ?";
+	cout << "Please enter username ? ";
 	cin >> user.Username;
-	cout << "Plesse enter password ?";
+	cout << "Plesse enter password ? ";
 	cin >> user.Password;
 
 	while (!ValidateLogin(user)) {
 		cout << "\nInvalid Username and Paswword, try again.\n";
 
-		cout << "Please enter username ?";
+		cout << "Please enter username ? ";
 		cin >> user.Username;
-		cout << "Plesse enter password ?";
+		cout << "Plesse enter password ? ";
 		cin >> user.Password;
 	}
 
@@ -907,6 +908,7 @@ void UserLogin(stUsers& user) {
 		MainMenue(user);
 	}
 
+	return user;
 }
 
 void ShowClients() {
@@ -965,7 +967,7 @@ void AddNewClients(stUsers user) {
 
 	if ((user.Permissions & 1 << 2) == 0) {
 		system("cls");
-		ErrorScreen();
+		ErrorScreen(user);
 	}
 
 	cout << "\n---------------------------------------\n";
@@ -988,7 +990,12 @@ void AddNewUsers() {
 
 }
 
-void DeleteClient() {
+void DeleteClient(stUsers user) {
+
+	if ((user.Permissions & 1 << 3) == 0) {
+		system("cls");
+		ErrorScreen(user);
+	}
 
 	DeleteClientScreen();
 
@@ -1003,7 +1010,12 @@ void DeleteClient() {
 
 }
 
-void UpdateClient() {
+void UpdateClient(stUsers user) {
+
+	if ((user.Permissions & 1 << 4) == 0) {
+		system("cls");
+		ErrorScreen(user);
+	}
 
 	UpdateClientScreen();
 
@@ -1034,7 +1046,12 @@ void UpdateClient() {
 
 }
 
-void FindClient() {
+void FindClient(stUsers user) {
+
+	if ((user.Permissions & 1 << 5) == 0) {
+		system("cls");
+		ErrorScreen(user);
+	}
 
 	FindClientScreen();
 
@@ -1063,7 +1080,7 @@ void FindClient() {
 
 }
 
-void performMangeUsersMenu(enManageUsersMenu users) {
+void performMangeUsersMenu(enManageUsersMenu users, stUsers user) {
 
 	switch (users) {
 
@@ -1072,7 +1089,7 @@ void performMangeUsersMenu(enManageUsersMenu users) {
 		system("cls");
 		ShowUsers();
 		system("pause");
-		MangeUsersMenu();
+		MangeUsersMenu(user);
 		break;
 
 	case enManageUsersMenu::UserAdd:
@@ -1080,13 +1097,13 @@ void performMangeUsersMenu(enManageUsersMenu users) {
 		system("cls");
 		AddNewUsers();
 		system("pause");
-		MangeUsersMenu();
+		MangeUsersMenu(user);
 		break;
 
 	case enManageUsersMenu::Main:
 
 		system("cls");
-		MainMenue();
+		MainMenue(user);
 		system("pause");
 		break;
 
@@ -1094,23 +1111,33 @@ void performMangeUsersMenu(enManageUsersMenu users) {
 
 }
 
-void TransactionMenue() {
+void TransactionMenue(stUsers user) {
+
+	if ((user.Permissions & 1 << 6) == 0) {
+		system("cls");
+		ErrorScreen(user);
+	}
 
 	system("cls");
 
 	TransactionsMenueScreen();
 
-	performTransactionsMenue((enTransctionsMenu)ReadAnswer("Choose what do you want to do ? [1-4] "));
+	performTransactionsMenue((enTransctionsMenu)ReadAnswer("Choose what do you want to do ? [1-4] "), user);
 
 }
 
-void MangeUsersMenu() {
+void MangeUsersMenu(stUsers user) {
+
+	if ((user.Permissions & 1 << 7) == 0) {
+		system("cls");
+		ErrorScreen(user);
+	}
 
 	system("cls");
 
 	ManageUsersScreen();
 
-	performMangeUsersMenu((enManageUsersMenu)ReadAnswer("Choose what you want to do ? [1-6]"));
+	performMangeUsersMenu((enManageUsersMenu)ReadAnswer("Choose what you want to do ? [1-6]"), user);
 
 }
 
@@ -1162,7 +1189,7 @@ void MainMenue(stUsers user) {
 		system("cls");
 		ShowClients();
 		system("pause");
-		MainMenue();
+		MainMenue(user);
 		break;
 
 	case enMenues::Add:
@@ -1170,44 +1197,44 @@ void MainMenue(stUsers user) {
 		system("cls");
 		AddNewClients(user);
 		system("pause");
-		MainMenue();
+		MainMenue(user);
 		break;
 
 	case enMenues::Del:
 
 		system("cls");
-		DeleteClient();
+		DeleteClient(user);
 		system("pause");
-		MainMenue();
+		MainMenue(user);
 		break;
 
 	case enMenues::Edit:
 
 		system("cls");
-		UpdateClient();
+		UpdateClient(user);
 		system("pause");
-		MainMenue();
+		MainMenue(user);
 		break;
 
 	case enMenues::Find:
 
 		system("cls");
-		FindClient();
+		FindClient(user);
 		system("pause");
-		MainMenue();
+		MainMenue(user);
 		break;
 
 	case enMenues::Trans:
 
 		system("cls");
-		TransactionMenue();
+		TransactionMenue(user);
 		system("pause");
 		break;
 
 	case enMenues::Mange:
 
 		system("cls");
-		MangeUsersMenu();
+		MangeUsersMenu(user);
 		system("pause");
 		break;
 
@@ -1227,7 +1254,7 @@ void Login() {
 
 	LoginScreen();
 
-	UserLogin(user);
+	user = UserLogin(user);
 
 
 }
