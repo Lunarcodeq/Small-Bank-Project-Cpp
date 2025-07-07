@@ -6,10 +6,13 @@
 
 using namespace std;
 string fileName = "Clients.txt";
+string fileUsers = "Users.txt";
 
-enum enMenues { Show = 1, Add = 2, Del = 3, Edit = 4, Find = 5, Trans = 6, Exit = 7 };
+enum enMenues { Show = 1, Add = 2, Del = 3, Edit = 4, Find = 5, Trans = 6, Mange = 7, Logout = 8 };
 
 enum enTransctionsMenu { Deposite = 1, Withdraw = 2, Total = 3, Goback = 4 };
+
+enum enManageUsersMenu { List = 1, UserAdd = 2, UserDel = 3, UserEdit = 4, UserFind = 5, Main = 6 };
 
 struct stClientRecord {
 
@@ -23,11 +26,25 @@ struct stClientRecord {
 
 };
 
+struct stUsers {
+
+	string Username;
+	string Password;
+	short Permissions = 0;
+
+};
+
 vector <stClientRecord> ClientsRecord();
+
+void MangeUsersMenu();
 
 void TransactionMenue();
 
 void MainMenue();
+
+vector <stUsers> UsersRecord();
+
+void Login();
 
 short ReadAnswer(string message) {
 	short answer = 0;
@@ -104,6 +121,102 @@ stClientRecord AddClient() {
 	return Client;
 }
 
+stUsers AddPermissions(stUsers& User) {
+
+	char answer = 'n';
+
+	cout << "\nList Clients ? [Y/N]";
+	cin >> answer;
+	if (toupper(answer) == 'Y') {
+		User.Permissions += (1 << 1);
+	}
+
+	answer = 'n';
+
+	cout << "\nAdd Clients ? [Y/N]";
+	cin >> answer;
+	if (toupper(answer) == 'Y') {
+		User.Permissions += (1 << 2);
+	}
+
+	answer = 'n';
+
+	cout << "\nDelete Clients ? [Y/N]";
+	cin >> answer;
+	if (toupper(answer) == 'Y') {
+		User.Permissions += (1 << 3);
+	}
+
+	answer = 'n';
+
+	cout << "\nUpdate Clients ? [Y/N]";
+	cin >> answer;
+	if (toupper(answer) == 'Y') {
+		User.Permissions += (1 << 4);
+	}
+
+	answer = 'n';
+
+	cout << "\nFind Clients ? [Y/N]";
+	cin >> answer;
+	if (toupper(answer) == 'Y') {
+		User.Permissions += (1 << 5);
+	}
+
+	cout << "\nManage Users ? [Y/N]";
+	cin >> answer;
+	if (toupper(answer) == 'Y') {
+		User.Permissions += (1 << 6);
+	}
+
+	return User;
+
+}
+
+stUsers AddUser() {
+
+	vector <stUsers> records = UsersRecord();
+
+	stUsers User;
+
+	bool isExist = false;
+
+	do {
+
+		cout << "\nEnter Username: \n";
+		getline(cin >> ws, User.Username);
+
+		for (stUsers& record : records) {
+
+			if (record.Username == User.Username) {
+
+				cout << "Sorry, the client with the number [" << User.Username<< "] Already Exists. \n";
+				isExist = true;
+				break;
+			}
+			else {
+				isExist = false;
+				break;
+			}
+
+		}
+	} while (isExist);
+
+	if (!isExist) {
+
+		cout << "Enter Password: \n";
+		getline(cin, User.Password);
+
+		cout << "Choose the permissions you want to give to this user: \n";
+
+		AddPermissions(User);
+
+	}
+
+
+	return User;
+}
+
 vector <stClientRecord> AddMoreClients() {
 
 	char answer = 'n';
@@ -127,6 +240,29 @@ vector <stClientRecord> AddMoreClients() {
 
 }
 
+vector <stUsers> AddMoreUsers() {
+
+	char answer = 'n';
+	stUsers UserInfo;
+
+	vector <stUsers> vUsersInfo;
+
+	do {
+
+		UserInfo = AddUser();
+
+		vUsersInfo.push_back(UserInfo);
+
+		cout << "Do you want to add more users? [Y/N]\n";
+		cin >> answer;
+		cout << endl;
+
+	} while (toupper(answer) == 'Y');
+
+	return vUsersInfo;
+
+}
+
 string ConvertInfosToRecord(stClientRecord ClientInfo, string delim = "#//#") {
 
 	string Record = "";
@@ -136,6 +272,17 @@ string ConvertInfosToRecord(stClientRecord ClientInfo, string delim = "#//#") {
 	Record += ClientInfo.FullName + delim;
 	Record += ClientInfo.PhoneNumber + delim;
 	Record += to_string(ClientInfo.Balance);
+
+	return Record;
+}
+
+string ConvertUsersInfosToRecord(stUsers ClientInfo, string delim = "#//#") {
+
+	string Record = "";
+
+	Record += ClientInfo.Username + delim;
+	Record += ClientInfo.Password + delim;
+	Record += to_string(ClientInfo.Permissions);
 
 	return Record;
 }
@@ -156,6 +303,31 @@ void UploadClientsRecord(vector <stClientRecord> ClientsInfo) {
 
 			line = ConvertInfosToRecord(info);
 			file << line << endl;
+
+		}
+
+		file.close();
+	}
+
+
+}
+
+void UploadUsersRecord(vector <stUsers> UsersInfo) {
+
+	stUsers Records;
+
+	fstream file;
+
+	file.open(fileUsers, ios::out | ios::app);
+
+	if (file.is_open()) {
+
+		string line = "";
+
+		for (stUsers& info : UsersInfo) {
+
+			line = ConvertUsersInfosToRecord(info);
+			file << endl << line;
 
 		}
 
@@ -230,6 +402,18 @@ stClientRecord LoadLinesToRecord(vector <string> splittedLine) {
 
 }
 
+stUsers LoadLinesToRecordUser(vector <string> splittedLine) {
+
+	stUsers User;
+
+	User.Username = splittedLine[0];
+	User.Password = splittedLine[1];
+	User.Permissions = stoi(splittedLine[2]);
+
+	return User;
+
+}
+
 vector <stClientRecord> ClientsRecord() {
 
 	vector <stClientRecord> Clients;
@@ -261,6 +445,37 @@ vector <stClientRecord> ClientsRecord() {
 
 }
 
+vector <stUsers> UsersRecord() {
+
+	vector <stUsers> Users;
+	vector <string> UsersString;
+
+	fstream file;
+
+	file.open(fileUsers, ios::in);
+
+	if (file.is_open()) {
+
+		string line = "";
+		stUsers record;
+
+		while (getline(file, line)) {
+
+			UsersString = SplitRecordWord(line);
+			record = LoadLinesToRecordUser(UsersString);
+
+			Users.push_back(record);
+
+		}
+
+
+		file.close();
+	}
+
+	return Users;
+
+}
+
 void PrintRecord(stClientRecord Record) {
 
 	cout << "| " << setw(19) << left << Record.AccountNumber;
@@ -268,6 +483,14 @@ void PrintRecord(stClientRecord Record) {
 	cout << "| " << setw(36) << left << Record.FullName;
 	cout << "| " << setw(19) << left << Record.PhoneNumber;
 	cout << "| " << setw(15) << left << Record.Balance;
+
+}
+
+void PrintUserRecord(stUsers Record) {
+
+	cout << "| " << setw(19) << left << Record.Username;
+	cout << "| " << setw(19) << left << Record.Password;
+	cout << "| " << setw(19) << left << Record.Permissions;
 
 }
 
@@ -344,6 +567,27 @@ void ShowWithdrawTaskScreen() {
 	cout << "\n---------------------------------------\n";
 	cout << "\tWithdraw Screen\n";
 	cout << "---------------------------------------\n\n";
+
+}
+
+void LoginScreen() {
+
+	cout << "\n---------------------------------\n";
+	cout << "\tLogin Screen\n";
+	cout << "---------------------------------\n";
+
+}
+
+void ErrorScreen() {
+
+	cout << "\n---------------------------------\n";
+	cout << "\tPermission Denied :-(\n";
+	cout << "---------------------------------\n";
+	cout << "You don't have access to this feature, pleaase\n";
+	cout << "Contact you're admin for more help";
+
+	system("pause");
+	MainMenue();
 
 }
 
@@ -516,6 +760,23 @@ void TransactionsMenueScreen() {
 
 }
 
+void ManageUsersScreen() {
+
+	cout << "===========================================\n";
+	cout << "\tManage Users Menu Screen\n";
+	cout << "===========================================\n";
+
+	cout << "\t" << "[1] List Users. \n";
+	cout << "\t" << "[2] Add User. \n";
+	cout << "\t" << "[3] Delete User. \n";
+	cout << "\t" << "[4] Update User. \n";
+	cout << "\t" << "[5] Find User. \n";
+	cout << "\t" << "[6] Main Menu. \n";
+
+	cout << "==========================================\n\n";
+
+}
+
 vector <stClientRecord> ChooseClientToDelete() {
 
 	vector <stClientRecord> AllClients = ClientsRecord();
@@ -609,6 +870,45 @@ vector <stClientRecord> ChooseClientToUpdate() {;
 	return AllClients;
 }
 
+bool ValidateLogin(stUsers UserToCheck) {
+
+	vector <stUsers> vUsers = UsersRecord();
+
+	for (stUsers& user : vUsers) {
+
+		if (user.Username == UserToCheck.Username && user.Password == UserToCheck.Password) {
+
+			return true;
+
+		}
+
+	}
+	return false;
+}
+
+void UserLogin(stUsers& user) {
+
+	cout << "Please enter username ?";
+	cin >> user.Username;
+	cout << "Plesse enter password ?";
+	cin >> user.Password;
+
+	while (!ValidateLogin(user)) {
+		cout << "\nInvalid Username and Paswword, try again.\n";
+
+		cout << "Please enter username ?";
+		cin >> user.Username;
+		cout << "Plesse enter password ?";
+		cin >> user.Password;
+	}
+
+	if (ValidateLogin(user)) {
+		system("cls");
+		MainMenue(user);
+	}
+
+}
+
 void ShowClients() {
 
 	vector <stClientRecord> cRecords = ClientsRecord();
@@ -635,7 +935,38 @@ void ShowClients() {
 	cout << "__________________________________________________________\n\n\n\n";
 }
 
-void AddNewClients() {
+void ShowUsers() {
+
+	vector <stUsers> cRecords = UsersRecord();
+
+	cout << "\n\t\t\t\t\tClient List (" << cRecords.size() << ") User(s).\n";
+
+	cout << "______________________________________________________________";
+	cout << "__________________________________________________________\n\n";
+	cout << "|" << setw(20) << left << " Username" << "|" << setw(20) << left << " Password";
+	cout << "|" << setw(20) << left << " Permissions";
+	cout << "\n______________________________________________________________";
+	cout << "__________________________________________________________\n\n";
+
+
+	for (stUsers& user : cRecords) {
+
+		PrintUserRecord(user);
+		cout << endl;
+
+	}
+
+
+	cout << "\n______________________________________________________________";
+	cout << "__________________________________________________________\n\n\n\n";
+}
+
+void AddNewClients(stUsers user) {
+
+	if ((user.Permissions & 1 << 2) == 0) {
+		system("cls");
+		ErrorScreen();
+	}
 
 	cout << "\n---------------------------------------\n";
 	cout << "\tAdd New Clients Screen\n";
@@ -643,6 +974,17 @@ void AddNewClients() {
 
 	vector <stClientRecord> ClientsInfo = AddMoreClients();
 	UploadClientsRecord(ClientsInfo);
+
+}
+
+void AddNewUsers() {
+
+	cout << "\n---------------------------------------\n";
+	cout << "\tAdd New Users Screen\n";
+	cout << "---------------------------------------\n";
+
+	vector <stUsers> UsersInfo = AddMoreUsers();
+	UploadUsersRecord(UsersInfo);
 
 }
 
@@ -721,6 +1063,37 @@ void FindClient() {
 
 }
 
+void performMangeUsersMenu(enManageUsersMenu users) {
+
+	switch (users) {
+
+	case enManageUsersMenu::List:
+
+		system("cls");
+		ShowUsers();
+		system("pause");
+		MangeUsersMenu();
+		break;
+
+	case enManageUsersMenu::UserAdd:
+
+		system("cls");
+		AddNewUsers();
+		system("pause");
+		MangeUsersMenu();
+		break;
+
+	case enManageUsersMenu::Main:
+
+		system("cls");
+		MainMenue();
+		system("pause");
+		break;
+
+	}
+
+}
+
 void TransactionMenue() {
 
 	system("cls");
@@ -728,6 +1101,16 @@ void TransactionMenue() {
 	TransactionsMenueScreen();
 
 	performTransactionsMenue((enTransctionsMenu)ReadAnswer("Choose what do you want to do ? [1-4] "));
+
+}
+
+void MangeUsersMenu() {
+
+	system("cls");
+
+	ManageUsersScreen();
+
+	performMangeUsersMenu((enManageUsersMenu)ReadAnswer("Choose what you want to do ? [1-6]"));
 
 }
 
@@ -739,14 +1122,14 @@ void ExitProgram() {
 
 }
 
-void MainMenue() {
+void MainMenue(stUsers user) {
 
 	system("cls");
 
 	enMenues menu;
 
 	cout << "===========================================\n";
-	cout << "\t\tMain Menue Screen\n";
+	cout << "\t\tMain Menu Screen\n";
 	cout << "===========================================\n";
 
 	cout << "\t" << "[1] Show Clients List. \n";
@@ -755,19 +1138,20 @@ void MainMenue() {
 	cout << "\t" << "[4] Update Client Info. \n";
 	cout << "\t" << "[5] Find Client. \n";
 	cout << "\t" << "[6] Transactions. \n";
-	cout << "\t" << "[7] Exit. \n";
+	cout << "\t" << "[7] Mange Users Menu. \n";
+	cout << "\t" << "[8] Logout. \n";
 
 	cout << "==========================================\n";
 
 	short answer;
-	cout << "Choose what do you want to do ? [1-6]\n";
+	cout << "Choose what do you want to do ? [1-8]\n";
 	cin >> answer;
 
 	while (cin.fail()) {
 		cin.clear();
 		cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
-		cout << "Choose what do you want to do ? [1-6]\n";
+		cout << "Choose what do you want to do ? [1-8]\n";
 		cin >> answer;
 	}
 
@@ -784,7 +1168,7 @@ void MainMenue() {
 	case enMenues::Add:
 
 		system("cls");
-		AddNewClients();
+		AddNewClients(user);
 		system("pause");
 		MainMenue();
 		break;
@@ -820,9 +1204,16 @@ void MainMenue() {
 		system("pause");
 		break;
 
-	case enMenues::Exit:
+	case enMenues::Mange:
+
 		system("cls");
-		ExitProgram();
+		MangeUsersMenu();
+		system("pause");
+		break;
+
+	case enMenues::Logout:
+		system("cls");
+		Login();
 		system("pause>0");
 		break;
 	}
@@ -830,9 +1221,20 @@ void MainMenue() {
 	system("pause>0");
 }
 
+void Login() {
+
+	stUsers user;
+
+	LoginScreen();
+
+	UserLogin(user);
+
+
+}
+
 int main() {
 
-	MainMenue();
+	Login();
 
 	return 0;
 }
