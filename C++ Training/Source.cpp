@@ -31,6 +31,8 @@ struct stUsers {
 	string Username;
 	string Password;
 	short Permissions = 0;
+	bool MarkToUpdate = false;
+	bool MarkToDelete = false;
 
 };
 
@@ -125,6 +127,13 @@ stUsers AddPermissions(stUsers& User) {
 
 	char answer = 'n';
 
+	cout << "\nDo you want to give this user all the permissions ? ";
+	cin >> answer;
+	if (toupper(answer) == 'Y') {
+		User.Permissions = -1;
+		return User;
+	}
+
 	cout << "\nList Clients ? [Y/N]";
 	cin >> answer;
 	if (toupper(answer) == 'Y') {
@@ -163,10 +172,16 @@ stUsers AddPermissions(stUsers& User) {
 		User.Permissions += (1 << 5);
 	}
 
-	cout << "\nManage Users ? [Y/N]";
+	cout << "\nTransactions Menu ? [Y/N]";
 	cin >> answer;
 	if (toupper(answer) == 'Y') {
 		User.Permissions += (1 << 6);
+	}
+
+	cout << "\nManage Users ? [Y/N]";
+	cin >> answer;
+	if (toupper(answer) == 'Y') {
+		User.Permissions += (1 << 7);
 	}
 
 	return User;
@@ -327,7 +342,7 @@ void UploadUsersRecord(vector <stUsers> UsersInfo) {
 		for (stUsers& info : UsersInfo) {
 
 			line = ConvertUsersInfosToRecord(info);
-			file << endl << line;
+			file << line << endl;
 
 		}
 
@@ -354,6 +369,34 @@ void UploadClientsRecordWithoutDeleted(vector <stClientRecord> ClientsInfo) {
 			if (info.MarkToDelete == false) {
 
 				line = ConvertInfosToRecord(info);
+				file << line << endl;
+
+			}
+
+		}
+
+		file.close();
+	}
+
+}
+
+void UploadUsersRecordWithoutDeleted(vector <stUsers> UsersInfo) {
+
+	stUsers Records;
+
+	fstream file;
+
+	file.open(fileUsers, ios::out);
+
+	if (file.is_open()) {
+
+		string line = "";
+
+		for (stUsers& info : UsersInfo) {
+
+			if (info.MarkToDelete == false) {
+
+				line = ConvertUsersInfosToRecord(info);
 				file << line << endl;
 
 			}
@@ -518,6 +561,20 @@ void ShowClientRecord(stClientRecord record) {
 
 }
 
+void ShowUserRecord(stUsers record) {
+
+	cout << "\nThe following are the user details: \n";
+
+	cout << "-------------------------------------------------\n";
+
+	cout << "Username             :" << record.Username << endl;
+	cout << "Password             :" << record.Password << endl;
+	cout << "Permissions          :" << record.Permissions << endl;
+
+	cout << "-------------------------------------------------\n\n";
+
+}
+
 void MakeDeposite(stClientRecord& client, double Amount) {
 
 	client.Balance += Amount;
@@ -538,6 +595,14 @@ void DeleteClientScreen() {
 
 }
 
+void DeleteUserScreen() {
+
+	cout << "\n---------------------------------------\n";
+	cout << "\tDelete User Screen\n";
+	cout << "---------------------------------------\n";
+
+}
+
 void UpdateClientScreen() {
 
 	cout << "\n---------------------------------------\n";
@@ -546,10 +611,26 @@ void UpdateClientScreen() {
 
 }
 
+void UpdateUserScreen() {
+
+	cout << "\n---------------------------------------\n";
+	cout << "\tUpdate User Screen\n";
+	cout << "---------------------------------------\n";
+
+}
+
 void FindClientScreen() {
 
 	cout << "\n---------------------------------------\n";
 	cout << "\tFind Client Screen\n";
+	cout << "---------------------------------------\n\n";
+
+}
+
+void FindUserScreen() {
+
+	cout << "\n---------------------------------------\n";
+	cout << "\tFind User Screen\n";
 	cout << "---------------------------------------\n\n";
 
 }
@@ -806,7 +887,7 @@ vector <stClientRecord> ChooseClientToDelete() {
 
 				record.MarkToDelete = true;
 
-				cout << "\nClient Deleted Successfully. \n\n";
+				cout << "\nUser Deleted Successfully. \n\n";
 
 			}
 
@@ -820,8 +901,67 @@ vector <stClientRecord> ChooseClientToDelete() {
 		cout << "\nSorry, the Client with the number [" << client.AccountNumber << "] is not exist. \n\n\n";
 		isExist = false;
 	}
-	
+
 	return AllClients;
+}
+
+vector <stUsers> ChooseUserToDelete(stUsers Admin) {
+
+	vector <stUsers> AllUsers = UsersRecord();
+	stUsers user;
+
+	bool isExist = false;
+
+
+	cout << "\n Enter User Username: \n";
+	getline(cin >> ws, user.Username);
+
+	for (stUsers& record : AllUsers) {
+
+		if (user.Username == "Admin") {
+
+			system("cls");
+			cout << "\n-----------------------------------------\n";
+			cout << "Sorry you cannot delete this user\n";
+			cout << "This user is the admin of the project.";
+			cout << "\n-----------------------------------------\n\n\n";
+			system("pause");
+			MangeUsersMenu(Admin);
+			
+		}
+
+		if (user.Username == record.Username) {
+
+			isExist = true;
+			ShowUserRecord(record);
+
+			char answer = 'n';
+
+			cout << "\nAre you sure you want to delete this client ? [Y/N]\n";
+			cin >> answer;
+
+			cout << endl << endl;
+
+			if (toupper(answer) == 'Y') {
+
+				record.MarkToDelete = true;
+
+				cout << "\nUser Deleted Successfully. \n\n";
+
+			}
+
+			break;
+		}
+
+	}
+
+
+	if (!isExist) {
+		cout << "\nSorry, the User with the username [" << user.Username << "] is not exist. \n\n\n";
+		isExist = false;
+	}
+	
+	return AllUsers;
 }
 
 vector <stClientRecord> ChooseClientToUpdate() {;
@@ -870,6 +1010,65 @@ vector <stClientRecord> ChooseClientToUpdate() {;
 	return AllClients;
 }
 
+vector <stUsers> ChooseUserToUpdate(stUsers Admin) {
+	;
+
+	vector <stUsers> AllUsers = UsersRecord();
+	stUsers user;
+
+	bool isExist = false;
+
+
+
+	cout << "\n Enter User Username: \n";
+	getline(cin >> ws, user.Username);
+
+	for (stUsers& record : AllUsers) {
+
+		if (user.Username == "Admin") {
+
+			system("cls");
+			cout << "\n-----------------------------------------\n";
+			cout << "Sorry you cannot delete this user\n";
+			cout << "This user is the admin of the project.";
+			cout << "\n-----------------------------------------\n\n\n";
+			system("pause");
+			MangeUsersMenu(Admin);
+
+		}
+
+		if (user.Username == record.Username) {
+
+			isExist = true;
+			ShowUserRecord(record);
+
+			char answer = 'n';
+
+			cout << "\nAre you sure you want to update this user ? [Y/N]\n";
+			cin >> answer;
+			cout << endl << endl;
+
+			if (toupper(answer) == 'Y') {
+
+				record.MarkToUpdate = true;
+
+			}
+
+			break;
+		}
+
+	}
+
+
+
+	if (!isExist) {
+		cout << "\nSorry, the User with the username [" << user.Username << "] is not exist. \n\n\n";
+		isExist = false;
+	}
+
+	return AllUsers;
+}
+
 bool ValidateLogin(stUsers& UserToCheck) {
 
 	vector <stUsers> vUsers = UsersRecord();
@@ -911,7 +1110,12 @@ stUsers UserLogin(stUsers& user) {
 	return user;
 }
 
-void ShowClients() {
+void ShowClients(stUsers user) {
+
+	if ((user.Permissions & 1 << 1) == 0) {
+		system("cls");
+		ErrorScreen(user);
+	}
 
 	vector <stClientRecord> cRecords = ClientsRecord();
 
@@ -1010,6 +1214,21 @@ void DeleteClient(stUsers user) {
 
 }
 
+void DeleteUser(stUsers user) {
+
+	DeleteUserScreen();
+
+	vector <stUsers> Users = ChooseUserToDelete(user);
+
+	UploadUsersRecordWithoutDeleted(Users);
+
+	//Refresh:
+	Users = UsersRecord();
+
+	return;
+
+}
+
 void UpdateClient(stUsers user) {
 
 	if ((user.Permissions & 1 << 4) == 0) {
@@ -1025,7 +1244,7 @@ void UpdateClient(stUsers user) {
 
 		if (Client.MarkToEdit == true) {
 
-			cout << "\nEnter Pincode: \n";
+			cout << "Enter Pincode: \n";
 			getline(cin >> ws, Client.Pincode);
 
 			cout << "Enter Name: \n";
@@ -1043,6 +1262,31 @@ void UpdateClient(stUsers user) {
 	}
 
 	UploadClientsRecordWithoutDeleted(ClientToUpdate);
+
+}
+
+void UpdateUser(stUsers user) {
+
+	UpdateClientScreen();
+
+	vector <stUsers> UserToUpdate = ChooseUserToUpdate(user);
+
+	for (stUsers& User : UserToUpdate) {
+
+		if (User.MarkToUpdate == true) {
+
+			cout << "Enter Password: \n";
+			getline(cin >> ws, User.Password);
+
+			User.Permissions = 0;
+			User = AddPermissions(User);
+
+			cout << "\nClient Infos Updated Successfully. \n\n";
+		}
+
+	}
+
+	UploadUsersRecordWithoutDeleted(UserToUpdate);
 
 }
 
@@ -1080,6 +1324,35 @@ void FindClient(stUsers user) {
 
 }
 
+void FindUser() {
+
+	FindUserScreen();
+
+	vector <stUsers> Users = UsersRecord();
+	stUsers User;
+
+	bool isFound = false;
+
+	cout << "Enter Username: \n";
+	getline(cin >> ws, User.Username);
+
+	for (stUsers& record : Users) {
+
+		if (User.Username == record.Username) {
+
+			isFound = true;
+			ShowUserRecord(record);
+
+		}
+
+	}
+
+	if (!isFound) {
+		cout << "\nSorry, the user with username [" << User.Username << "] is Not Found.\n\n";
+	}
+
+}
+
 void performMangeUsersMenu(enManageUsersMenu users, stUsers user) {
 
 	switch (users) {
@@ -1096,6 +1369,30 @@ void performMangeUsersMenu(enManageUsersMenu users, stUsers user) {
 
 		system("cls");
 		AddNewUsers();
+		system("pause");
+		MangeUsersMenu(user);
+		break;
+
+	case enManageUsersMenu::UserDel:
+
+		system("cls");
+		DeleteUser(user);
+		system("pause");
+		MangeUsersMenu(user);
+		break;
+
+	case enManageUsersMenu::UserEdit:
+
+		system("cls");
+		UpdateUser(user);
+		system("pause");
+		MangeUsersMenu(user);
+		break;
+
+	case enManageUsersMenu::UserFind:
+
+		system("cls");
+		FindUser();
 		system("pause");
 		MangeUsersMenu(user);
 		break;
@@ -1187,7 +1484,7 @@ void MainMenue(stUsers user) {
 	case enMenues::Show:
 
 		system("cls");
-		ShowClients();
+		ShowClients(user);
 		system("pause");
 		MainMenue(user);
 		break;
@@ -1260,7 +1557,7 @@ void Login() {
 }
 
 int main() {
-
+	
 	Login();
 
 	return 0;
