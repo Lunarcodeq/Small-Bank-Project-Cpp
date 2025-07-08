@@ -662,7 +662,7 @@ void LoginScreen() {
 void ErrorScreen(stUsers user) {
 
 	cout << "\n---------------------------------\n";
-	cout << "\tPermission Denied :-(\n";
+	cout << "\tAccess Denied :-(\n";
 	cout << "---------------------------------\n";
 	cout << "You don't have access to this feature, pleaase\n";
 	cout << "Contact you're admin for more help\n\n\n";
