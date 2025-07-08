@@ -5,8 +5,9 @@
 #include <fstream>
 
 using namespace std;
-string fileName = "Clients.txt";
-string fileUsers = "Users.txt";
+
+const string fileName = "Clients.txt";
+const string fileUsers = "Users.txt";
 
 enum enMenues { Show = 1, Add = 2, Del = 3, Edit = 4, Find = 5, Trans = 6, Mange = 7, Logout = 8 };
 
